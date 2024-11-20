@@ -5,6 +5,10 @@ import argparse
 import threading
 from concurrent.futures import ThreadPoolExecutor
 import time
+from colorama import Fore, Back, Style, init
+
+# Initialize colorama
+init(autoreset=True)
 
 class WebsiteCrawler:
     def __init__(self, base_url, max_depth=3, verbose=False, max_threads=5):
@@ -30,7 +34,7 @@ class WebsiteCrawler:
             return response.text
         except requests.RequestException as e:
             if self.verbose:
-                print(f"Error fetching {url}: {e}")
+                print(f"{Fore.RED}Error fetching {url}: {e}")
             return None
 
     def extract_links(self, html, current_url):
@@ -51,7 +55,7 @@ class WebsiteCrawler:
             self.visited.add(url)
 
         if self.verbose:
-            print(f"Crawling: {url} (Depth: {depth})")
+            print(f"{Fore.CYAN}Crawling: {url} (Depth: {depth})")
 
         html = self.fetch_page(url)
         if html:
@@ -79,7 +83,18 @@ class WebsiteCrawler:
         with open(filename, "w") as file:
             for url in sorted(set(self.results)):
                 file.write(url + "\n")
-        print(f"Results saved to {filename}")
+        print(f"{Fore.GREEN}Results saved to {filename}")
+
+def print_start_message():
+    """Print a cool, colorful start message."""
+    print(Fore.YELLOW + Style.BRIGHT + """
+ __     __    ___               __     __   __   ___  __  
+|  \ | / _` |  |   /\  |       |  \ | / _` / _` |__  |__) 
+|__/ | \__> |  |  /~~\ |___    |__/ | \__> \__> |___ |  \ 
+                                                                                                                                                                                                               
+    """)
+    print(Fore.CYAN + Style.BRIGHT + "Let's start crawling the web...")
+    print(Fore.GREEN + "Press 'CTRL+C' to stop the crawling process anytime!")
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -98,7 +113,10 @@ if __name__ == "__main__":
     verbose = args.verbose
     max_threads = args.threads
 
-    print(f"Starting crawl at {base_url} with depth {max_depth} and {max_threads} threads...")
+    # Print the cool colorful start message
+    print_start_message()
+
+    print(f"{Fore.YELLOW}Starting crawl at {base_url} with depth {max_depth} and {max_threads} threads...")
     crawler = WebsiteCrawler(base_url, max_depth, verbose, max_threads)
     crawler.crawl(base_url)
 
