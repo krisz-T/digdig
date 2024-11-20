@@ -4,10 +4,11 @@ from urllib.parse import urljoin, urlparse
 import argparse
 
 class WebsiteCrawler:
-    def __init__(self, base_url, max_depth=3):
+    def __init__(self, base_url, max_depth=3, verbose=False):
         self.base_url = base_url
         self.visited = set()
         self.max_depth = max_depth
+        self.verbose = verbose
         self.results = []
 
     def is_valid_url(self, url):
@@ -23,7 +24,8 @@ class WebsiteCrawler:
             response.raise_for_status()
             return response.text
         except requests.RequestException as e:
-            print(f"Error fetching {url}: {e}")
+            if self.verbose:
+                print(f"Error fetching {url}: {e}")
             return None
 
     def extract_links(self, html, current_url):
@@ -40,7 +42,8 @@ class WebsiteCrawler:
         """Recursively crawl a website up to the max depth."""
         if depth > self.max_depth or url in self.visited:
             return
-        print(f"Crawling: {url} (Depth: {depth})")
+        if self.verbose:
+            print(f"Crawling: {url} (Depth: {depth})")
         self.visited.add(url)
 
         html = self.fetch_page(url)
@@ -63,15 +66,17 @@ if __name__ == "__main__":
     parser.add_argument("url", help="The base URL to start crawling from")
     parser.add_argument("-d", "--depth", type=int, default=3, help="Max depth for crawling (default: 3)")
     parser.add_argument("-o", "--output", help="File to save the crawled URLs")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose mode (default: False)")
     args = parser.parse_args()
 
     # Start crawling
     base_url = args.url
     max_depth = args.depth
     output_file = args.output
+    verbose = args.verbose
 
     print(f"Starting crawl at {base_url} with depth {max_depth}...")
-    crawler = WebsiteCrawler(base_url, max_depth)
+    crawler = WebsiteCrawler(base_url, max_depth, verbose)
     crawler.crawl(base_url)
 
     if output_file:
