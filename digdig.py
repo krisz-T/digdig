@@ -64,8 +64,11 @@ class WebsiteCrawler:
                 self.results.extend(links)
 
             # Now process all the links, using a thread pool for concurrent crawling
-            for link in links:
-                self.crawl_page(link, depth + 1)
+            with ThreadPoolExecutor(max_workers=self.max_threads) as executor:
+                for link in links:
+                    if link not in self.visited:
+                        executor.submit(self.crawl_page, link, depth + 1)
+
 
     def crawl(self, url):
         """Crawl a website using multithreading."""
@@ -86,13 +89,11 @@ class WebsiteCrawler:
         print(f"{Fore.GREEN}Results saved to {filename}")
 
 def print_start_message():
-    """Print a cool, colorful start message."""
-    print(Fore.YELLOW + Style.BRIGHT + """
+    print(Fore.YELLOW + Style.BRIGHT + r"""
  __     __    ___               __     __   __   ___  __  
 |  \ | / _` |  |   /\  |       |  \ | / _` / _` |__  |__) 
 |__/ | \__> |  |  /~~\ |___    |__/ | \__> \__> |___ |  \ 
-                                                                                                                                                                                                               
-    """)
+""")
     print(Fore.CYAN + Style.BRIGHT + "Let's start crawling the web...")
     print(Fore.GREEN + "Press 'CTRL+C' to stop the crawling process anytime!")
 
